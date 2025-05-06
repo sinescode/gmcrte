@@ -1,0 +1,8 @@
+flask
+sqlalchemy
+python-dotenv
+psycopg2-binary
+dnspython
+pandas
+xlsxwriter
+openpyxl
