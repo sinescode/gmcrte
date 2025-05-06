@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
 from io import BytesIO
 import random
+import os
 import string
 import time
 import socket
@@ -13,6 +14,8 @@ import pandas as pd
 import concurrent.futures
 from sqlalchemy import desc
 from datetime import datetime, timezone, timedelta
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -39,8 +42,7 @@ class GeneratedAccount(Base):
     check_date = Column(DateTime, default=datetime.now)
 
 # Initialize database
-engine = create_engine('postgresql://avnadmin:AVNS_Bjzw8QBs1b6ykbit4EU@pg-368de7df-choda7512-9ecd.d.aivencloud.com:22061/defaultdb?sslmode=require'
-)
+engine = create_engine(os.getenv('DATABASE_URL'))
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
