@@ -39,7 +39,8 @@ class GeneratedAccount(Base):
     check_date = Column(DateTime, default=datetime.now)
 
 # Initialize database
-engine = create_engine('sqlite:///gmail_accounts.db')
+engine = create_engine('postgresql://avnadmin:AVNS_Bjzw8QBs1b6ykbit4EU@pg-368de7df-choda7512-9ecd.d.aivencloud.com:22061/defaultdb?sslmode=require'
+)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
