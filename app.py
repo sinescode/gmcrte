@@ -1,3 +1,10 @@
+import subprocess
+# Try installing requirements (not recommended)
+try:
+    subprocess.check_call(["pip", "install", "-r", "requirements.txt"])
+except subprocess.CalledProcessError as e:
+    print("Failed to install dependencies:", e)
+
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
 from io import BytesIO
 import random
@@ -16,12 +23,6 @@ from sqlalchemy import desc
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 load_dotenv()
-import subprocess
-# Try installing requirements (not recommended)
-try:
-    subprocess.check_call(["pip", "install", "-r", "requirements.txt"])
-except subprocess.CalledProcessError as e:
-    print("Failed to install dependencies:", e)
 app = Flask(__name__)
 # Status codes for SMTP responses
 INVALID_MAILBOX_STATUS = [450, 550, 553]
