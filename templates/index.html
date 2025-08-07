@@ -51,16 +51,21 @@
                 <h1 class="text-xl font-bold">
                     <i class="fas fa-envelope mr-2"></i> Gmail Generator
                 </h1>
-                <button id="downloadBtn" class="px-3 py-1 rounded-md bg-white text-blue-600 text-sm font-medium">
-                    <i class="fas fa-download mr-1"></i> Export
-                </button>
+                <div>
+                    <button id="downloadBtn" class="hidden px-3 py-1 rounded-md bg-white text-blue-600 text-sm font-medium">
+                        <i class="fas fa-download mr-1"></i> Export
+                    </button>
+                    <button id="logoutBtn" class="hidden px-3 py-1 rounded-md bg-white text-blue-600 text-sm font-medium">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                    </button>
+                </div>
             </div>
         </header>
 
         <!-- Main Content -->
         <main class="flex-1 container mx-auto p-4">
             <!-- Tabs -->
-            <div class="flex border-b border-gray-300 mb-6">
+            <div id="tabs" class="hidden flex border-b border-gray-300 mb-6">
                 <button id="generateTab" class="tab-active px-4 py-2 font-medium text-sm focus:outline-none">
                     Generate
                 </button>
@@ -70,7 +75,7 @@
             </div>
 
             <!-- Generate Section -->
-            <div id="generateSection">
+            <div id="generateSection" class="hidden">
                 <div class="mb-6">
                     <h2 class="text-lg font-semibold mb-3">Generate Gmail Accounts</h2>
                     <div class="flex space-x-2 mb-4">
@@ -88,7 +93,6 @@
                         </button>
                     </h3>
                     <div id="generatedAccountsList" class="space-y-3">
-                        <!-- Accounts will be loaded here -->
                         <div class="text-center py-4 text-gray-500">
                             <i class="fas fa-envelope-open-text text-3xl mb-2"></i>
                             <p>No generated accounts yet</p>
@@ -97,12 +101,11 @@
                 </div>
             </div>
 
-            <!-- Saved Section (hidden by default) -->
+            <!-- Saved Section -->
             <div id="savedSection" class="hidden">
                 <div class="mb-6">
                     <h2 class="text-lg font-semibold mb-3">Saved Accounts</h2>
                     <div id="savedAccountsList" class="space-y-3">
-                        <!-- Accounts will be loaded here -->
                         <div class="text-center py-4 text-gray-500">
                             <i class="fas fa-save text-3xl mb-2"></i>
                             <p>No saved accounts yet</p>
@@ -112,105 +115,150 @@
             </div>
         </main>
 
+        <!-- Login Modal -->
+        <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Login</h3>
+                <div class="space-y-4">
+                    <!-- Username/Password Login -->
+                    <div>
+                        <input id="loginUsername" type="text" class="telegram-input w-full px-3 py-2 rounded-md" placeholder="Username">
+                        <input id="loginPassword" type="password" class="telegram-input w-full px-3 py-2 rounded-md mt-2" placeholder="Password">
+                        <button id="loginBtn" class="telegram-button w-full px-4 py-2 rounded-md mt-3">Login</button>
+                    </div>
+                    <!-- API Key Login -->
+                    <div class="border-t pt-4">
+                        <input id="apiKey" type="text" class="telegram-input w-full px-3 py-2 rounded-md" placeholder="API Key">
+                        <button id="apiLoginBtn" class="telegram-button w-full px-4 py-2 rounded-md mt-3">Login with API Key</button>
+                    </div>
+                    <p class="text-sm text-center">
+                        Don't have an account? <a href="#" id="showRegister" class="text-blue-500 hover:underline">Register</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Modal -->
+        <div id="registerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Register</h3>
+                <div class="space-y-4">
+                    <input id="registerUsername" type="text" class="telegram-input w-full px-3 py-2 rounded-md" placeholder="Username">
+                    <input id="registerPassword" type="password" class="telegram-input w-full px-3 py-2 rounded-md" placeholder="Password">
+                    <button id="registerBtn" class="telegram-button w-full px-4 py-2 rounded-md">Register</button>
+                    <p class="text-sm text-center">
+                        Already have an account? <a href="#" id="showLogin" class="text-blue-500 hover:underline">Login</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <!-- Loading Modal -->
         <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
             <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
                 <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                <h3 class="text-lg font-medium text-gray-900">Generating accounts</h3>
+                <h3 class="text-lg font-medium text-gray-900">Processing</h3>
                 <p class="mt-2 text-sm text-gray-500" id="loadingText">Please wait...</p>
             </div>
         </div>
 
-<!-- Account Template (hidden) -->
-<template id="accountTemplate">
-    <div class="account-card bg-white rounded-lg shadow p-4">
-        <div class="flex justify-between items-start mb-2">
-            <div>
-                <h4 class="font-medium text-account-email"></h4>
-                <br>
-                    <span class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-account-username"></span>
-                    <button class="copy-username-btn ml-2 text-blue-500 hover:text-blue-700" title="Copy username">
-                        <i class="fas fa-copy text-sm"></i>
+        <!-- Account Template -->
+        <template id="accountTemplate">
+            <div class="account-card bg-white rounded-lg shadow p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h4 class="font-medium text-account-email"></h4>
+                        <p class="text-sm text-gray-500">Username: 
+                            <span class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-account-username"></span>
+                            <button class="copy-username-btn ml-2 text-blue-500 hover:text-blue-700" title="Copy username">
+                                <i class="fas fa-copy text-sm"></i>
+                            </button>
+                        </p>
+                    </div>
+                    <span class="text-xs text-gray-400 text-account-date"></span>
+                </div>
+                <div class="flex items-center justify-between mt-3">
+                    <div class="flex items-center">
+                        <span class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-account-password"></span>
+                        <button class="copy-btn ml-2 text-blue-500 hover:text-blue-700" title="Copy password">
+                            <i class="fas fa-copy text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="save-btn px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">
+                            <i class="fas fa-save mr-1"></i> Save
+                        </button>
+                        <button class="delete-btn px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Saved Account Template -->
+        <template id="savedAccountTemplate">
+            <div class="account-card bg-white rounded-lg shadow p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h4 class="font-medium text-account-email"></h4>
+                        <p class="text-sm text-gray-500">Username: 
+                            <span class="text-account-username"></span>
+                            <button class="copy-username-btn ml-2 text-blue-500 hover:text-blue-700" title="Copy username">
+                                <i class="fas fa-copy text-sm"></i>
+                            </button>
+                        </p>
+                    </div>
+                    <span class="text-xs text-gray-400 text-account-date"></span>
+                </div>
+                <div class="flex items-center justify-between mt-3">
+                    <div class="flex items-center">
+                        <span class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-account-password"></span>
+                        <button class="copy-btn ml-2 text-blue-500 hover:text-blue-700" title="Copy password">
+                            <i class="fas fa-copy text-sm"></i>
+                        </button>
+                    </div>
+                    <button class="delete-btn px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">
+                        <i class="fas fa-trash"></i>
                     </button>
+                </div>
             </div>
-            <span class="text-xs text-gray-400 text-account-date"></span>
-        </div>
-        <div class="flex items-center justify-between mt-3">
-            <div class="flex items-center">
-                <span class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-account-password"></span>
-                <button class="copy-btn ml-2 text-blue-500 hover:text-blue-700" title="Copy password">
-                    <i class="fas fa-copy text-sm"></i>
-                </button>
-            </div>
-            <div class="flex space-x-2">
-                <button class="save-btn px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">
-                    <i class="fas fa-save mr-1"></i> Save
-                </button>
-                <button class="delete-btn px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-</template>
-
-<!-- Saved Account Template (hidden) -->
-<template id="savedAccountTemplate">
-    <div class="account-card bg-white rounded-lg shadow p-4">
-        <div class="flex justify-between items-start mb-2">
-            <div>
-                <h4 class="font-medium text-account-email"></h4>
-                <p class="text-sm text-gray-500">Username: 
-                    <span class="text-account-username"></span>
-                    <button class="copy-username-btn ml-2 text-blue-500 hover:text-blue-700" title="Copy username">
-
-                    </button>
-                </p>
-            </div>
-            <span class="text-xs text-gray-400 text-account-date"></span>
-        </div>
-        <div class="flex items-center justify-between mt-3">
-            <div class="flex items-center">
-                <span class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-account-password"></span>
-                <button class="copy-btn ml-2 text-blue-500 hover:text-blue-700" title="Copy password">
-                    <i class="fas fa-copy text-sm"></i>
-                </button>
-            </div>
-            <button class="delete-btn px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-    </div>
-</template>
-
+        </template>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Tab switching
+            // UI Elements
+            const loginModal = document.getElementById('loginModal');
+            const registerModal = document.getElementById('registerModal');
+            const showRegister = document.getElementById('showRegister');
+            const showLogin = document.getElementById('showLogin');
+            const loginBtn = document.getElementById('loginBtn');
+            const apiLoginBtn = document.getElementById('apiLoginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
             const generateTab = document.getElementById('generateTab');
             const savedTab = document.getElementById('savedTab');
             const generateSection = document.getElementById('generateSection');
             const savedSection = document.getElementById('savedSection');
+            const tabs = document.getElementById('tabs');
+            const downloadBtn = document.getElementById('downloadBtn');
 
+            // Tab switching
             generateTab.addEventListener('click', () => {
-                generateTab.classList.add('tab-active');
+                generateTab.classList.add('tab-active', 'text-blue-600');
                 generateTab.classList.remove('text-gray-600');
-                generateTab.classList.add('text-blue-600');
-                savedTab.classList.remove('tab-active');
+                savedTab.classList.remove('tab-active', 'text-blue-600');
                 savedTab.classList.add('text-gray-600');
-                savedTab.classList.remove('text-blue-600');
                 generateSection.classList.remove('hidden');
                 savedSection.classList.add('hidden');
             });
 
             savedTab.addEventListener('click', () => {
-                savedTab.classList.add('tab-active');
+                savedTab.classList.add('tab-active', 'text-blue-600');
                 savedTab.classList.remove('text-gray-600');
-                savedTab.classList.add('text-blue-600');
-                generateTab.classList.remove('tab-active');
+                generateTab.classList.remove('tab-active', 'text-blue-600');
                 generateTab.classList.add('text-gray-600');
-                generateTab.classList.remove('text-blue-600');
                 savedSection.classList.remove('hidden');
                 generateSection.classList.add('hidden');
                 loadSavedAccounts();
@@ -218,12 +266,23 @@
 
             // Button event listeners
             document.getElementById('generateSingleBtn').addEventListener('click', generateSingleAccount);
-            
             document.getElementById('downloadBtn').addEventListener('click', downloadAccounts);
             document.getElementById('clearGeneratedBtn').addEventListener('click', clearGeneratedAccounts);
+            loginBtn.addEventListener('click', login);
+            apiLoginBtn.addEventListener('click', apiLogin);
+            registerBtn.addEventListener('click', register);
+            showRegister.addEventListener('click', () => {
+                loginModal.classList.add('hidden');
+                registerModal.classList.remove('hidden');
+            });
+            showLogin.addEventListener('click', () => {
+                registerModal.classList.add('hidden');
+                loginModal.classList.remove('hidden');
+            });
+            logoutBtn.addEventListener('click', logout);
 
-            // Initial load
-            loadGeneratedAccounts();
+            // Check authentication status on load
+            checkAuthStatus();
 
             // Functions
             function showLoading(message = 'Please wait...') {
@@ -242,7 +301,6 @@
                 }`;
                 toast.textContent = message;
                 document.body.appendChild(toast);
-                
                 setTimeout(() => {
                     toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
                     setTimeout(() => toast.remove(), 300);
@@ -258,6 +316,129 @@
                 });
             }
 
+            function checkAuthStatus() {
+                fetch('/generated_accounts')
+                    .then(response => {
+                        if (response.status === 401) {
+                            loginModal.classList.remove('hidden');
+                            tabs.classList.add('hidden');
+                            generateSection.classList.add('hidden');
+                            savedSection.classList.add('hidden');
+                            downloadBtn.classList.add('hidden');
+                            logoutBtn.classList.add('hidden');
+                            return null;
+                        }
+                        loginModal.classList.add('hidden');
+                        registerModal.classList.add('hidden');
+                        tabs.classList.remove('hidden');
+                        generateSection.classList.remove('hidden');
+                        downloadBtn.classList.remove('hidden');
+                        logoutBtn.classList.remove('hidden');
+                        loadGeneratedAccounts();
+                        return response.json();
+                    })
+                    .catch(error => {
+                        console.error('Error checking auth:', error);
+                        showToast('Error checking authentication', true);
+                    });
+            }
+
+            function login() {
+                const username = document.getElementById('loginUsername').value;
+                const password = document.getElementById('loginPassword').value;
+                showLoading('Logging in...');
+                fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    loginModal.classList.add('hidden');
+                    tabs.classList.remove('hidden');
+                    generateSection.classList.remove('hidden');
+                    downloadBtn.classList.remove('hidden');
+                    logoutBtn.classList.remove('hidden');
+                    loadGeneratedAccounts();
+                    showToast('Logged in successfully!');
+                })
+                .catch(error => {
+                    showToast(error.message || 'Failed to login', true);
+                })
+                .finally(() => hideLoading());
+            }
+
+            function apiLogin() {
+                const apiKey = document.getElementById('apiKey').value;
+                showLoading('Logging in with API key...');
+                fetch('/api_login', {
+                    method: 'POST',
+                    headers: { 'X-API-Key': apiKey }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    loginModal.classList.add('hidden');
+                    tabs.classList.remove('hidden');
+                    generateSection.classList.remove('hidden');
+                    downloadBtn.classList.remove('hidden');
+                    logoutBtn.classList.remove('hidden');
+                    loadGeneratedAccounts();
+                    showToast('Logged in with API key!');
+                })
+                .catch(error => {
+                    showToast(error.message || 'Failed to login with API key', true);
+                })
+                .finally(() => hideLoading());
+            }
+
+            function register() {
+                const username = document.getElementById('registerUsername').value;
+                const password = document.getElementById('registerPassword').value;
+                showLoading('Registering...');
+                fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    showToast(`Registered successfully! Your API key: ${data.api_key}`);
+                    registerModal.classList.add('hidden');
+                    loginModal.classList.remove('hidden');
+                })
+                .catch(error => {
+                    showToast(error.message || 'Failed to register', true);
+                })
+                .finally(() => hideLoading());
+            }
+
+            function logout() {
+                showLoading('Logging out...');
+                fetch('/logout', { method: 'POST' })
+                    .then(() => {
+                        loginModal.classList.remove('hidden');
+                        tabs.classList.add('hidden');
+                        generateSection.classList.add('hidden');
+                        savedSection.classList.add('hidden');
+                        downloadBtn.classList.add('hidden');
+                        logoutBtn.classList.add('hidden');
+                        showToast('Logged out successfully!');
+                    })
+                    .catch(error => {
+                        showToast('Failed to logout', true);
+                    })
+                    .finally(() => hideLoading());
+            }
+
             function createAccountElement(account, isSaved = false) {
                 const template = isSaved 
                     ? document.getElementById('savedAccountTemplate').content.cloneNode(true)
@@ -271,7 +452,6 @@
                 template.querySelector('.text-account-password').textContent = account.password;
                 template.querySelector('.text-account-date').textContent = account.check_date;
                 
-                // Add event listeners
                 const copyBtn = template.querySelector('.copy-btn');
                 const copyusrBtn = template.querySelector('.copy-username-btn');
                 if (copyBtn) {
@@ -296,11 +476,21 @@
 
             function loadGeneratedAccounts() {
                 fetch('/generated_accounts')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (response.status === 401) {
+                            loginModal.classList.remove('hidden');
+                            tabs.classList.add('hidden');
+                            generateSection.classList.add('hidden');
+                            savedSection.classList.add('hidden');
+                            downloadBtn.classList.add('hidden');
+                            logoutBtn.classList.add('hidden');
+                            throw new Error('Authentication required');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         const container = document.getElementById('generatedAccountsList');
                         container.innerHTML = '';
-                        
                         if (data.accounts && data.accounts.length > 0) {
                             data.accounts.forEach(account => {
                                 container.appendChild(createAccountElement(account));
@@ -316,17 +506,27 @@
                     })
                     .catch(error => {
                         console.error('Error loading generated accounts:', error);
-                        showToast('Failed to load generated accounts', true);
+                        showToast(error.message || 'Failed to load generated accounts', true);
                     });
             }
 
             function loadSavedAccounts() {
                 fetch('/saved_accounts')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (response.status === 401) {
+                            loginModal.classList.remove('hidden');
+                            tabs.classList.add('hidden');
+                            generateSection.classList.add('hidden');
+                            savedSection.classList.add('hidden');
+                            downloadBtn.classList.add('hidden');
+                            logoutBtn.classList.add('hidden');
+                            throw new Error('Authentication required');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         const container = document.getElementById('savedAccountsList');
                         container.innerHTML = '';
-                        
                         if (data.accounts && data.accounts.length > 0) {
                             data.accounts.forEach(account => {
                                 container.appendChild(createAccountElement(account, true));
@@ -342,20 +542,28 @@
                     })
                     .catch(error => {
                         console.error('Error loading saved accounts:', error);
-                        showToast('Failed to load saved accounts', true);
+                        showToast(error.message || 'Failed to load saved accounts', true);
                     });
             }
 
             function generateSingleAccount() {
                 showLoading('Generating 1 account...');
-                
                 fetch('/generate_single', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status === 401) {
+                        loginModal.classList.remove('hidden');
+                        tabs.classList.add('hidden');
+                        generateSection.classList.add('hidden');
+                        savedSection.classList.add('hidden');
+                        downloadBtn.classList.add('hidden');
+                        logoutBtn.classList.add('hidden');
+                        throw new Error('Authentication required');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.error) {
                         throw new Error(data.error);
@@ -367,20 +575,28 @@
                     console.error('Error:', error);
                     showToast(error.message || 'Failed to generate account', true);
                 })
-                .finally(() => {
-                    hideLoading();
-                });
+                .finally(() => hideLoading());
             }
 
             function saveAccount(account) {
+                showLoading('Saving account...');
                 fetch('/save_account', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(account)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status === 401) {
+                        loginModal.classList.remove('hidden');
+                        tabs.classList.add('hidden');
+                        generateSection.classList.add('hidden');
+                        savedSection.classList.add('hidden');
+                        downloadBtn.classList.add('hidden');
+                        logoutBtn.classList.add('hidden');
+                        throw new Error('Authentication required');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.error) {
                         throw new Error(data.error);
@@ -391,56 +607,69 @@
                 .catch(error => {
                     console.error('Error:', error);
                     showToast(error.message || 'Failed to save account', true);
-                });
+                })
+                .finally(() => hideLoading());
             }
 
             function deleteAccount(email, isSaved = false) {
-                
-                
-                fetch(`/delete/${email.split('@')[0]}`, {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-                    
-                    if (isSaved) {
-                        loadSavedAccounts();
-                    } else {
-                        loadGeneratedAccounts();
-                    }
-                    
-                    showToast('Account deleted successfully!');
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast(error.message || 'Failed to delete account', true);
-                });
+                showLoading('Deleting account...');
+                fetch(`/delete/${email.split('@')[0]}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.status === 401) {
+                            loginModal.classList.remove('hidden');
+                            tabs.classList.add('hidden');
+                            generateSection.classList.add('hidden');
+                            savedSection.classList.add('hidden');
+                            downloadBtn.classList.add('hidden');
+                            logoutBtn.classList.add('hidden');
+                            throw new Error('Authentication required');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        if (isSaved) {
+                            loadSavedAccounts();
+                        } else {
+                            loadGeneratedAccounts();
+                        }
+                        showToast('Account deleted successfully!');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast(error.message || 'Failed to delete account', true);
+                    })
+                    .finally(() => hideLoading());
             }
 
             function clearGeneratedAccounts() {
                 const container = document.getElementById('generatedAccountsList');
                 const accounts = container.querySelectorAll('.account-card');
                 const emails = Array.from(accounts).map(account => account.dataset.email);
-                
                 if (emails.length === 0) {
                     showToast('No accounts to clear', true);
                     return;
                 }
-                
-                
                 showLoading('Clearing generated accounts...');
-                
                 fetch('/cancel_generated', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ emails })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status === 401) {
+                        loginModal.classList.remove('hidden');
+                        tabs.classList.add('hidden');
+                        generateSection.classList.add('hidden');
+                        savedSection.classList.add('hidden');
+                        downloadBtn.classList.add('hidden');
+                        logoutBtn.classList.add('hidden');
+                        throw new Error('Authentication required');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.error) {
                         throw new Error(data.error);
@@ -452,13 +681,13 @@
                     console.error('Error:', error);
                     showToast(error.message || 'Failed to clear accounts', true);
                 })
-                .finally(() => {
-                    hideLoading();
-                });
+                .finally(() => hideLoading());
             }
 
             function downloadAccounts() {
+                showLoading('Downloading accounts...');
                 window.location.href = '/download';
+                setTimeout(hideLoading, 1000); // Hide loading after a short delay
             }
         });
     </script>
